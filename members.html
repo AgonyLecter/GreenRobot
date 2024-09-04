@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Robot - Members</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    /* Base Styles */
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background-color: #0d0d0d;
+      margin: 0;
+      padding: 0;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #39ff14;
+      margin: 20px;
+    }
+
+    /* Search Bar */
+    .search-bar {
+      margin: 20px;
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+    }
+
+    .search-bar input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #39ff14;
+      border-radius: 5px;
+      background-color: #1c1c1c;
+      color: white;
+      font-size: 1rem;
+    }
+
+    .members-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .member-card {
+      background-color: #1c1c1c;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      max-width: 300px;
+      text-align: center;
+      position: relative;
+    }
+
+    .member-card img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 5px;
+    }
+
+    .member-card h2 {
+      color: #39ff14;
+      font-size: 1.5rem;
+      margin: 10px 0;
+    }
+
+    .member-card p {
+      font-size: 1rem;
+      margin: 5px 0;
+    }
+
+    .action-buttons {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 10px;
+    }
+
+    .action-buttons button {
+      background-color: #39ff14;
+      border: none;
+      padding: 10px 15px;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: background-color 0.3s ease-in-out;
+    }
+
+    .action-buttons button:hover {
+      background-color: #32e613;
+    }
+
+    /* Notification */
+    .notification {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #39ff14;
+      color: black;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      display: none;
+      z-index: 1000;
+      animation: fadeInOut 4s ease-in-out;
+    }
+
+    .notification.error {
+      background-color: #d32f2f;
+      color: white;
+    }
+
+    @keyframes fadeInOut {
+      0% { bottom: -50px; opacity: 0; }
+      10% { bottom: 20px; opacity: 1; }
+      90% { bottom: 20px; opacity: 1; }
+      100% { bottom: -50px; opacity: 0; }
+    }
+
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal {
+      background-color: #1c1c1c;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 400px;
+      color: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .modal h2 {
+      margin-bottom: 20px;
+      color: #39ff14;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .modal-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .modal-buttons .confirm {
+      background-color: #39ff14;
+      color: black;
+    }
+
+    .modal-buttons .cancel {
+      background-color: #d32f2f;
+      color: white;
+    }
+
+    .modal-buttons button:hover {
+      opacity: 0.9;
+    }
+
+    @keyframes fadeIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+  </style>
+</head>
+<body>
+
+  <h1>Members of Green Robot Club</h1>
+
+  <!-- Search Bar -->
+  <div class="search-bar">
+    <input type="text" id="searchInput" placeholder="Search by ID, Name...">
+  </div>
+
+  <!-- Members container -->
+  <div class="members-container" id="membersContainer">
+    <!-- Members will be dynamically loaded here -->
+  </div>
+
+  <footer>© Green Robot - All rights reserved</footer>
+
+  <!-- Notification -->
+  <div class="notification" id="notification"></div>
+
+  <!-- Modal for confirmation -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2>Are you sure?</h2>
+      <p>This action cannot be undone.</p>
+      <div class="modal-buttons">
+        <button class="confirm" id="confirmDelete">Yes, Delete</button>
+        <button class="cancel" id="cancelDelete">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getStorage, ref as storageRef, getDownloadURL, deleteObject } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
+      authDomain: "greenrobot-ede43.firebaseapp.com",
+      databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "greenrobot-ede43",
+      storageBucket: "greenrobot-ede43.appspot.com",
+      messagingSenderId: "41296246884",
+      appId: "1:41296246884:web:0a13e2890e4a824cf60771",
+      measurementId: "G-F3FK6JXBSR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    const membersRef = ref(db, 'members');
+    let membersList = []; 
+
+    function showNotification(message, type = 'success') {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.className = 'notification';
+      if (type === 'error') {
+        notification.classList.add('error');
+      }
+      notification.style.display = 'block';
+      setTimeout(() => {
+        notification.style.display = 'none';
+      }, 4000);
+    }
+
+    let deleteMemberId = null;
+    let deleteMemberObj = null;
+
+    // Modal confirm and cancel functionality
+    document.getElementById('cancelDelete').addEventListener('click', () => {
+      closeModal();
+    });
+
+    document.getElementById('confirmDelete').addEventListener('click', () => {
+      if (deleteMemberId && deleteMemberObj) {
+        performDelete(deleteMemberId, deleteMemberObj);
+      }
+    });
+
+    function showModal(memberId, member) {
+      deleteMemberId = memberId;
+      deleteMemberObj = member;
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    function loadMembers() {
+      onValue(membersRef, (snapshot) => {
+        const membersContainer = document.getElementById('membersContainer');
+        membersContainer.innerHTML = ''; 
+
+        membersList = []; 
+
+        snapshot.forEach((childSnapshot) => {
+          const member = childSnapshot.val();
+          const memberId = childSnapshot.key;
+          membersList.push({ member, memberId }); 
+          const memberCard = createMemberCard(member, memberId);
+          membersContainer.appendChild(memberCard);
+        });
+      });
+    }
+
+    function createMemberCard(member, memberId) {
+      const card = document.createElement('div');
+      card.className = 'member-card';
+
+      const frontImg = document.createElement('img');
+      getDownloadURL(storageRef(storage, member.documentFront)).then((url) => {
+        frontImg.src = url;
+      });
+
+      const name = document.createElement('h2');
+      name.textContent = `${member.firstName} ${member.lastName}`;
+
+      const idNumber = document.createElement('p');
+      idNumber.textContent = `ID: ${member.idNumber}`;
+
+      const expiryDate = document.createElement('p');
+      expiryDate.textContent = `Expiry Date: ${member.expiryDate}`;
+
+      const registrationDate = document.createElement('p');
+      if (member.registrationTimestamp) {
+        const date = new Date(member.registrationTimestamp);
+        registrationDate.textContent = `Registered on: ${date.toLocaleString()}`;
+      } else {
+        registrationDate.textContent = 'Registered on: Unknown';
+      }
+
+      const actionButtons = document.createElement('div');
+      actionButtons.className = 'action-buttons';
+
+      const editButton = document.createElement('button');
+      editButton.textContent = 'Edit';
+      editButton.onclick = () => editMember(memberId, member);
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.onclick = () => showModal(memberId, member);
+
+      actionButtons.appendChild(editButton);
+      actionButtons.appendChild(deleteButton);
+
+      card.appendChild(frontImg);
+      card.appendChild(name);
+      card.appendChild(idNumber);
+      card.appendChild(expiryDate);
+      card.appendChild(registrationDate);
+      card.appendChild(actionButtons);
+
+      return card;
+    }
+
+    function editMember(memberId, member) {
+      const newFirstName = prompt('Enter new first name:', member.firstName);
+      const newLastName = prompt('Enter new last name:', member.lastName);
+      const newExpiryDate = prompt('Enter new expiry date:', member.expiryDate);
+
+      if (newFirstName && newLastName && newExpiryDate) {
+        update(ref(db, `members/${memberId}`), {
+          firstName: newFirstName,
+          lastName: newLastName,
+          expiryDate: newExpiryDate
+        }).then(() => {
+          showNotification('Member updated successfully.');
+        }).catch((error) => {
+          showNotification('Error updating member.', 'error');
+          console.error('Error updating member:', error);
+        });
+      }
+    }
+
+    function performDelete(memberId, member) {
+      remove(ref(db, `members/${memberId}`))
+        .then(() => {
+          const frontImgRef = storageRef(storage, member.documentFront);
+          const backImgRef = storageRef(storage, member.documentBack);
+
+          Promise.all([deleteObject(frontImgRef), deleteObject(backImgRef)])
+            .then(() => {
+              showNotification('Member and files deleted successfully.');
+              closeModal();
+            }).catch((error) => {
+              showNotification('Error deleting files.', 'error');
+              console.error('Error deleting files:', error);
+              closeModal();
+            });
+        })
+        .catch((error) => {
+          showNotification('Error deleting member.', 'error');
+          console.error('Error deleting member:', error);
+          closeModal();
+        });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', (event) => {
+      const searchTerm = event.target.value.toLowerCase();
+      const membersContainer = document.getElementById('membersContainer');
+      membersContainer.innerHTML = ''; 
+
+      membersList
+        .filter(({ member }) => 
+          member.firstName.toLowerCase().includes(searchTerm) ||
+          member.lastName.toLowerCase().includes(searchTerm) ||
+          member.idNumber.toLowerCase().includes(searchTerm)
+        )
+        .forEach(({ member, memberId }) => {
+          const memberCard = createMemberCard(member, memberId);
+          membersContainer.appendChild(memberCard);
+        });
+    });
+
+    window.onload = loadMembers;
+  </script>
+
+</body>
+</html>
+
+
+
