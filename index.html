@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Robot - Member Registration</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+    /* Base Styles */
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background-color: #0d0d0d;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      color: white;
+    }
+
+    h1 {
+      color: #39ff14;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      margin: 20px;
+      padding: 20px;
+      background-color: #1c1c1c;
+      border-radius: 10px;
+      position: relative;
+      animation: ledGlow 1.5s infinite alternate;
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      width: 150px;
+    }
+
+    label {
+      font-size: 1rem;
+      margin-top: 10px;
+    }
+
+    input[type="text"], input[type="date"], input[type="file"] {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #39ff14;
+      border-radius: 5px;
+      box-sizing: border-box;
+      background-color: #333;
+      color: white;
+    }
+
+    button {
+      width: 100%;
+      background-color: #39ff14;
+      color: black;
+      padding: 14px 20px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.3s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #32e613;
+    }
+
+    /* Modal for confirmation */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal {
+      background-color: #1c1c1c;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 400px;
+      color: white;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .modal h2 {
+      margin-bottom: 20px;
+      color: #39ff14;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .modal-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+
+    .modal-buttons .confirm {
+      background-color: #39ff14;
+      color: black;
+    }
+
+    .modal-buttons .cancel {
+      background-color: #d32f2f;
+      color: white;
+    }
+
+    .modal-buttons button:hover {
+      opacity: 0.9;
+    }
+
+    @keyframes fadeIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* Timer Styles */
+    .timer {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.5rem;
+      color: #39ff14;
+      text-align: center;
+      margin-top: 20px;
+      padding: 10px;
+      border: 2px solid #39ff14;
+      border-radius: 10px;
+      box-shadow: 0 0 15px #39ff14;
+      animation: ledGlow 2s infinite alternate;
+    }
+
+    @keyframes ledGlow {
+      0% {
+        box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14, 0 0 40px #39ff14;
+      }
+      100% {
+        box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14, 0 0 50px #39ff14, 0 0 60px #39ff14;
+      }
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: #666;
+    }
+
+    @media screen and (max-width: 600px) {
+      .container {
+        margin: 0 10px;
+      }
+
+      button {
+        font-size: 1rem;
+      }
+
+      label, input {
+        font-size: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo">
+    <img src="logo.png" alt="Green Robot Logo">
+  </div>
+
+  <h1>Member Registration</h1>
+
+  <!-- Timer Section -->
+  <div id="timer" class="timer"></div>
+
+  <div class="container">
+    <form id="memberForm">
+      <label for="firstName">First Name:</label>
+      <input type="text" id="firstName" placeholder="Enter first name" required>
+
+      <label for="lastName">Last Name:</label>
+      <input type="text" id="lastName" placeholder="Enter last name" required>
+
+      <label for="idNumber">ID Number (Driver's License, Passport, etc.):</label>
+      <input type="text" id="idNumber" placeholder="Enter ID number" required>
+
+      <label for="expiryDate">Document Expiry Date:</label>
+      <input type="date" id="expiryDate" required>
+
+      <label for="frontFile">Upload Front of Document:</label>
+      <input type="file" id="frontFile" accept="image/*" required>
+
+      <label for="backFile">Upload Back of Document:</label>
+      <input type="file" id="backFile" accept="image/*" required>
+
+      <button type="submit">Register Member</button>
+    </form>
+
+    <div class="loader" id="loader"></div>
+  </div>
+
+  <!-- Modal for alerts -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2>Registration Failed</h2>
+      <p>An error occurred during registration. Please try again.</p>
+      <div class="modal-buttons">
+        <button class="confirm" id="confirmOk">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>© Green Robot - All rights reserved</footer>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
+      authDomain: "greenrobot-ede43.firebaseapp.com",
+      databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "greenrobot-ede43",
+      storageBucket: "greenrobot-ede43.appspot.com",
+      messagingSenderId: "41296246884",
+      appId: "1:41296246884:web:0a13e2890e4a824cf60771",
+      measurementId: "G-F3FK6JXBSR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    // Show or hide loader
+    function showLoader(show) {
+      const loader = document.getElementById('loader');
+      loader.style.display = show ? 'block' : 'none';
+    }
+
+    // Show modal notification for errors
+    function showModalError(message) {
+      const modal = document.getElementById('modalOverlay');
+      modal.style.display = 'flex';
+      const modalMessage = modal.querySelector('p');
+      modalMessage.textContent = message;
+    }
+
+    document.getElementById('confirmOk').addEventListener('click', () => {
+      const modal = document.getElementById('modalOverlay');
+      modal.style.display = 'none';
+    });
+
+    document.getElementById('memberForm').addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      showLoader(true);
+
+      const firstName = document.getElementById('firstName').value;
+      const lastName = document.getElementById('lastName').value;
+      const idNumber = document.getElementById('idNumber').value;
+      const expiryDate = document.getElementById('expiryDate').value;
+
+      const frontFile = document.getElementById('frontFile').files[0];
+      const backFile = document.getElementById('backFile').files[0];
+
+      const frontRef = storageRef(storage, 'documents/' + idNumber + '_front');
+      const backRef = storageRef(storage, 'documents/' + idNumber + '_back');
+
+      const registrationTimestamp = Date.now(); // Get the current timestamp
+
+      Promise.all([uploadBytes(frontRef, frontFile), uploadBytes(backRef, backFile)])
+        .then(() => Promise.all([getDownloadURL(frontRef), getDownloadURL(backRef)]))
+        .then((urls) => {
+          const memberData = {
+            firstName,
+            lastName,
+            idNumber,
+            expiryDate,
+            documentFront: urls[0],
+            documentBack: urls[1],
+            registrationTimestamp
+          };
+          return push(ref(db, 'members/'), memberData);
+        })
+        .then(() => {
+          showLoader(false);
+          alert('Member successfully registered!');
+          document.getElementById('memberForm').reset();
+        })
+        .catch(() => {
+          showLoader(false);
+          showModalError('An error occurred during registration. Please try again.');
+        });
+    });
+
+    // Timer function for current time
+    function updateTime() {
+      const timerElement = document.getElementById('timer');
+      const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', year: 'numeric', month: 'numeric', day: 'numeric' };
+      const now = new Date().toLocaleString('en-GB', options);
+      timerElement.textContent = `${now}`;
+    }
+
+    setInterval(updateTime, 1000);
+  </script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
