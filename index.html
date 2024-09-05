@@ -150,6 +150,19 @@
       90% { opacity: 1; }
       100% { opacity: 0; }
     }
+
+    /* Camera Styles */
+    #cameraStream, #photoPreview {
+      display: none;
+      width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+
+    #photoPreview {
+      display: block;
+    }
+
   </style>
 </head>
 <body>
@@ -178,14 +191,14 @@
       <input type="date" id="expiryDate">
 
       <!-- File Upload for Front of Document -->
-      <label for="frontFile">Upload or Capture Front of Document:</label>
+      <label for="frontFile">Upload Front of Document:</label>
       <input type="file" id="frontFile" accept="image/*">
+
       <button type="button" id="captureFront">Capture Front</button>
 
-      <!-- File Upload for Back of Document -->
-      <label for="backFile">Upload or Capture Back of Document:</label>
-      <input type="file" id="backFile" accept="image/*">
-      <button type="button" id="captureBack">Capture Back</button>
+      <!-- Camera stream and photo preview elements -->
+      <video id="cameraStream" autoplay></video>
+      <canvas id="photoPreview"></canvas>
 
       <button type="submit">Register Member</button>
     </form>
@@ -216,6 +229,42 @@
     const db = getDatabase(app);
     const storage = getStorage(app);
 
+    let stream, canvasContext;
+
+    // Open the camera
+    document.getElementById('captureFront').addEventListener('click', async () => {
+      const video = document.getElementById('cameraStream');
+      const canvas = document.getElementById('photoPreview');
+      canvasContext = canvas.getContext('2d');
+
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      video.style.display = 'block';
+    });
+
+    // Capture the photo from the camera
+    document.getElementById('cameraStream').addEventListener('click', () => {
+      const video = document.getElementById('cameraStream');
+      const canvas = document.getElementById('photoPreview');
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+
+      // Convert canvas to Blob
+      canvas.toBlob(blob => {
+        // Simula il caricamento del file scattato
+        const fileInput = document.getElementById('frontFile');
+        const dataTransfer = new DataTransfer();
+        const file = new File([blob], 'front_document.jpg', { type: 'image/jpeg' });
+        dataTransfer.items.add(file);
+        fileInput.files = dataTransfer.files;
+      }, 'image/jpeg');
+    });
+
     // Show or hide loader
     function showLoader(show) {
       const loader = document.getElementById('loader');
@@ -231,20 +280,6 @@
       setTimeout(() => toast.remove(), 3000);
     }
 
-    // Funzione per catturare foto
-    function capturePhoto(inputElementId) {
-      const inputElement = document.getElementById(inputElementId);
-      inputElement.click(); // Simula il click per aprire la fotocamera del dispositivo
-    }
-
-    document.getElementById('captureFront').addEventListener('click', () => {
-      capturePhoto('frontFile');
-    });
-
-    document.getElementById('captureBack').addEventListener('click', () => {
-      capturePhoto('backFile');
-    });
-
     // Validate form fields before submission
     function validateForm() {
       const firstName = document.getElementById('firstName').value.trim();
@@ -252,7 +287,6 @@
       const idNumber = document.getElementById('idNumber').value.trim();
       const expiryDate = document.getElementById('expiryDate').value;
       const frontFile = document.getElementById('frontFile').files[0];
-      const backFile = document.getElementById('backFile').files[0];
 
       if (!firstName) {
         showToast('Please enter the first name.', 'error');
@@ -274,10 +308,6 @@
         showToast('Please upload the front of the document.', 'error');
         return false;
       }
-      if (!backFile) {
-        showToast('Please upload the back of the document.', 'error');
-        return false;
-      }
 
       return true;
     }
@@ -297,23 +327,20 @@
       const expiryDate = document.getElementById('expiryDate').value;
 
       const frontFile = document.getElementById('frontFile').files[0];
-      const backFile = document.getElementById('backFile').files[0];
 
       const frontRef = storageRef(storage, 'documents/' + idNumber + '_front');
-      const backRef = storageRef(storage, 'documents/' + idNumber + '_back');
 
       const registrationTimestamp = Date.now();
 
-      Promise.all([uploadBytes(frontRef, frontFile), uploadBytes(backRef, backFile)])
-        .then(() => Promise.all([getDownloadURL(frontRef), getDownloadURL(backRef)]))
-        .then((urls) => {
+      uploadBytes(frontRef, frontFile)
+        .then(() => getDownloadURL(frontRef))
+        .then((url) => {
           const memberData = {
             firstName,
             lastName,
             idNumber,
             expiryDate,
-            documentFront: urls[0],
-            documentBack: urls[1],
+            documentFront: url,
             registrationTimestamp
           };
           return push(ref(db, 'members/'), memberData);
