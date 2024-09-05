@@ -81,6 +81,10 @@
       background-color: #32e613;
     }
 
+    .hidden {
+      display: none;
+    }
+
     /* Timer Styles */
     .timer {
       font-family: 'Orbitron', sans-serif;
@@ -197,10 +201,15 @@
       <button type="button" id="captureFront">Capture Front</button>
 
       <!-- Camera stream and photo preview elements -->
-      <video id="cameraStream" autoplay></video>
-      <canvas id="photoPreview"></canvas>
+      <video id="cameraStream" class="hidden" autoplay></video>
+      <canvas id="photoPreview" class="hidden"></canvas>
 
-      <button type="submit">Register Member</button>
+      <div id="confirmButtons" class="hidden">
+        <button type="button" id="confirmPhoto">Confirm Photo</button>
+        <button type="button" id="retryPhoto">Retry Photo</button>
+      </div>
+
+      <button type="submit" id="registerButton">Register Member</button>
     </form>
 
     <div class="loader" id="loader"></div>
@@ -231,38 +240,69 @@
 
     let stream, canvasContext;
 
-    // Open the camera
+    // Open the camera with the rear camera (facingMode: environment)
     document.getElementById('captureFront').addEventListener('click', async () => {
       const video = document.getElementById('cameraStream');
       const canvas = document.getElementById('photoPreview');
-      canvasContext = canvas.getContext('2d');
+      const confirmButtons = document.getElementById('confirmButtons');
+      
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
+      } catch (error) {
+        showToast('Error accessing the camera. Please try again.', 'error');
+        return;
+      }
 
-      stream = await navigator.mediaDevices.getUserMedia({ video: true });
       video.srcObject = stream;
-      video.style.display = 'block';
+      video.classList.remove('hidden');
+      confirmButtons.classList.add('hidden');
+      canvas.classList.add('hidden');
     });
 
     // Capture the photo from the camera
     document.getElementById('cameraStream').addEventListener('click', () => {
       const video = document.getElementById('cameraStream');
       const canvas = document.getElementById('photoPreview');
+      const confirmButtons = document.getElementById('confirmButtons');
+      canvasContext = canvas.getContext('2d');
 
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      video.style.display = 'none';
-      canvas.style.display = 'block';
+      video.classList.add('hidden');
+      canvas.classList.remove('hidden');
+      confirmButtons.classList.remove('hidden');
+    });
 
-      // Convert canvas to Blob
+    // Confirm or retry the photo
+    document.getElementById('confirmPhoto').addEventListener('click', () => {
+      const canvas = document.getElementById('photoPreview');
+
+      // Convert canvas to Blob and simulate file upload
       canvas.toBlob(blob => {
-        // Simula il caricamento del file scattato
         const fileInput = document.getElementById('frontFile');
         const dataTransfer = new DataTransfer();
         const file = new File([blob], 'front_document.jpg', { type: 'image/jpeg' });
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
+
+        showToast('Photo confirmed. Ready for upload.', 'success');
       }, 'image/jpeg');
+      
+      // Stop the camera stream after confirming
+      stream.getTracks().forEach(track => track.stop());
+    });
+
+    document.getElementById('retryPhoto').addEventListener('click', () => {
+      const video = document.getElementById('cameraStream');
+      const canvas = document.getElementById('photoPreview');
+      const confirmButtons = document.getElementById('confirmButtons');
+
+      // Hide canvas and retry with the video stream
+      canvas.classList.add('hidden');
+      confirmButtons.classList.add('hidden');
+      video.classList.remove('hidden');
     });
 
     // Show or hide loader
@@ -368,6 +408,7 @@
   </script>
 </body>
 </html>
+
 
 
 
