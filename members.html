@@ -24,6 +24,17 @@
       margin: 20px;
     }
 
+    /* Logo */
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      width: 150px;
+    }
+
     /* Search Bar */
     .search-bar {
       margin: 20px;
@@ -199,6 +210,10 @@
 </head>
 <body>
 
+  <div class="logo">
+    <img src="logo.png" alt="Green Robot Logo">
+  </div>
+
   <h1>Members of Green Robot Club</h1>
 
   <!-- Search Bar -->
@@ -252,7 +267,7 @@
     const membersRef = ref(db, 'members');
     let membersList = []; 
 
-    function showNotification(message, type = 'success') {
+    function showToast(message, type = 'success') {
       const notification = document.getElementById('notification');
       notification.textContent = message;
       notification.className = 'notification';
@@ -367,9 +382,9 @@
           lastName: newLastName,
           expiryDate: newExpiryDate
         }).then(() => {
-          showNotification('Member updated successfully.');
+          showToast('Member updated successfully.');
         }).catch((error) => {
-          showNotification('Error updating member.', 'error');
+          showToast('Error updating member.', 'error');
           console.error('Error updating member:', error);
         });
       }
@@ -383,19 +398,25 @@
 
           Promise.all([deleteObject(frontImgRef), deleteObject(backImgRef)])
             .then(() => {
-              showNotification('Member and files deleted successfully.');
+              showToast('Member and files deleted successfully.');
               closeModal();
             }).catch((error) => {
-              showNotification('Error deleting files.', 'error');
+              showToast('Error deleting files.', 'error');
               console.error('Error deleting files:', error);
               closeModal();
             });
         })
         .catch((error) => {
-          showNotification('Error deleting member.', 'error');
+          showToast('Error deleting member.', 'error');
           console.error('Error deleting member:', error);
           closeModal();
         });
+    }
+
+    // Funzione per scattare la foto
+    function capturePhoto(inputElementId) {
+      const inputElement = document.getElementById(inputElementId);
+      inputElement.click();
     }
 
     document.getElementById('searchInput').addEventListener('input', (event) => {
