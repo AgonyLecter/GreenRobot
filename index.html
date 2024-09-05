@@ -81,69 +81,6 @@
       background-color: #32e613;
     }
 
-    /* Modal for confirmation */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-    }
-
-    .modal {
-      background-color: #1c1c1c;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      max-width: 400px;
-      color: white;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    .modal h2 {
-      margin-bottom: 20px;
-      color: #39ff14;
-    }
-
-    .modal-buttons {
-      display: flex;
-      justify-content: space-around;
-    }
-
-    .modal-buttons button {
-      padding: 10px 20px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background-color 0.3s ease;
-    }
-
-    .modal-buttons .confirm {
-      background-color: #39ff14;
-      color: black;
-    }
-
-    .modal-buttons .cancel {
-      background-color: #d32f2f;
-      color: white;
-    }
-
-    .modal-buttons button:hover {
-      opacity: 0.9;
-    }
-
-    @keyframes fadeIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-
     /* Timer Styles */
     .timer {
       font-family: 'Orbitron', sans-serif;
@@ -187,6 +124,32 @@
         font-size: 1rem;
       }
     }
+
+    /* Toast Notification Styles */
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #39ff14;
+      color: black;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      animation: fadeInOut 4s ease-in-out;
+    }
+
+    .toast.error {
+      background-color: #d32f2f;
+      color: white;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% { opacity: 0; }
+    }
   </style>
 </head>
 <body>
@@ -203,22 +166,26 @@
   <div class="container">
     <form id="memberForm">
       <label for="firstName">First Name:</label>
-      <input type="text" id="firstName" placeholder="Enter first name" required>
+      <input type="text" id="firstName" placeholder="Enter first name">
 
       <label for="lastName">Last Name:</label>
-      <input type="text" id="lastName" placeholder="Enter last name" required>
+      <input type="text" id="lastName" placeholder="Enter last name">
 
-      <label for="idNumber">ID Number (Driver's License, Passport, etc.):</label>
-      <input type="text" id="idNumber" placeholder="Enter ID number" required>
+      <label for="idNumber">ID Number (Driver's License, Passport, any ID etc.):</label>
+      <input type="text" id="idNumber" placeholder="Enter ID number">
 
       <label for="expiryDate">Document Expiry Date:</label>
-      <input type="date" id="expiryDate" required>
+      <input type="date" id="expiryDate">
 
-      <label for="frontFile">Upload Front of Document:</label>
-      <input type="file" id="frontFile" accept="image/*" required>
+      <!-- File Upload for Front of Document -->
+      <label for="frontFile">Upload or Capture Front of Document:</label>
+      <input type="file" id="frontFile" accept="image/*">
+      <button type="button" id="captureFront">Capture Front</button>
 
-      <label for="backFile">Upload Back of Document:</label>
-      <input type="file" id="backFile" accept="image/*" required>
+      <!-- File Upload for Back of Document -->
+      <label for="backFile">Upload or Capture Back of Document:</label>
+      <input type="file" id="backFile" accept="image/*">
+      <button type="button" id="captureBack">Capture Back</button>
 
       <button type="submit">Register Member</button>
     </form>
@@ -226,20 +193,9 @@
     <div class="loader" id="loader"></div>
   </div>
 
-  <!-- Modal for alerts -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <h2>Registration Failed</h2>
-      <p>An error occurred during registration. Please try again.</p>
-      <div class="modal-buttons">
-        <button class="confirm" id="confirmOk">OK</button>
-      </div>
-    </div>
-  </div>
-
   <footer>© Green Robot - All rights reserved</footer>
 
-  <!-- Firebase Integration -->
+  <!-- Firebase Integration and Custom Scripts -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
     import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
@@ -266,21 +222,72 @@
       loader.style.display = show ? 'block' : 'none';
     }
 
-    // Show modal notification for errors
-    function showModalError(message) {
-      const modal = document.getElementById('modalOverlay');
-      modal.style.display = 'flex';
-      const modalMessage = modal.querySelector('p');
-      modalMessage.textContent = message;
+    // Toast Notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast ' + type;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
     }
 
-    document.getElementById('confirmOk').addEventListener('click', () => {
-      const modal = document.getElementById('modalOverlay');
-      modal.style.display = 'none';
+    // Funzione per catturare foto
+    function capturePhoto(inputElementId) {
+      const inputElement = document.getElementById(inputElementId);
+      inputElement.click(); // Simula il click per aprire la fotocamera del dispositivo
+    }
+
+    document.getElementById('captureFront').addEventListener('click', () => {
+      capturePhoto('frontFile');
     });
+
+    document.getElementById('captureBack').addEventListener('click', () => {
+      capturePhoto('backFile');
+    });
+
+    // Validate form fields before submission
+    function validateForm() {
+      const firstName = document.getElementById('firstName').value.trim();
+      const lastName = document.getElementById('lastName').value.trim();
+      const idNumber = document.getElementById('idNumber').value.trim();
+      const expiryDate = document.getElementById('expiryDate').value;
+      const frontFile = document.getElementById('frontFile').files[0];
+      const backFile = document.getElementById('backFile').files[0];
+
+      if (!firstName) {
+        showToast('Please enter the first name.', 'error');
+        return false;
+      }
+      if (!lastName) {
+        showToast('Please enter the last name.', 'error');
+        return false;
+      }
+      if (!idNumber) {
+        showToast('Please enter the ID number.', 'error');
+        return false;
+      }
+      if (!expiryDate) {
+        showToast('Please enter the document expiry date.', 'error');
+        return false;
+      }
+      if (!frontFile) {
+        showToast('Please upload the front of the document.', 'error');
+        return false;
+      }
+      if (!backFile) {
+        showToast('Please upload the back of the document.', 'error');
+        return false;
+      }
+
+      return true;
+    }
 
     document.getElementById('memberForm').addEventListener('submit', function (e) {
       e.preventDefault();
+
+      if (!validateForm()) {
+        return;
+      }
 
       showLoader(true);
 
@@ -295,7 +302,7 @@
       const frontRef = storageRef(storage, 'documents/' + idNumber + '_front');
       const backRef = storageRef(storage, 'documents/' + idNumber + '_back');
 
-      const registrationTimestamp = Date.now(); // Get the current timestamp
+      const registrationTimestamp = Date.now();
 
       Promise.all([uploadBytes(frontRef, frontFile), uploadBytes(backRef, backFile)])
         .then(() => Promise.all([getDownloadURL(frontRef), getDownloadURL(backRef)]))
@@ -313,12 +320,12 @@
         })
         .then(() => {
           showLoader(false);
-          alert('Member successfully registered!');
+          showToast('Member successfully registered!');
           document.getElementById('memberForm').reset();
         })
         .catch(() => {
           showLoader(false);
-          showModalError('An error occurred during registration. Please try again.');
+          showToast('An error occurred during registration. Please try again.', 'error');
         });
     });
 
