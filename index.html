@@ -141,6 +141,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
       animation: fadeInOut 4s ease-in-out;
+      z-index: 1000;
     }
 
     .toast.error {
@@ -167,6 +168,37 @@
       display: block;
     }
 
+    /* Confirm Buttons Styles */
+    #confirmButtons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    #confirmButtons button {
+      width: 48%;
+    }
+
+    /* Loader Styles */
+    .loader {
+      border: 8px solid #f3f3f3;
+      border-top: 8px solid #39ff14;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      animation: spin 2s linear infinite;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      z-index: 1000;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -183,27 +215,28 @@
   <div class="container">
     <form id="memberForm">
       <label for="firstName">First Name:</label>
-      <input type="text" id="firstName" placeholder="Enter first name">
+      <input type="text" id="firstName" placeholder="Enter first name" required>
 
       <label for="lastName">Last Name:</label>
-      <input type="text" id="lastName" placeholder="Enter last name">
+      <input type="text" id="lastName" placeholder="Enter last name" required>
 
       <label for="idNumber">ID Number (Driver's License, Passport, any ID etc.):</label>
-      <input type="text" id="idNumber" placeholder="Enter ID number">
+      <input type="text" id="idNumber" placeholder="Enter ID number" required>
 
       <label for="expiryDate">Document Expiry Date:</label>
-      <input type="date" id="expiryDate">
+      <input type="date" id="expiryDate" required>
 
       <!-- File Upload for Front of Document -->
       <label for="frontFile">Upload Front of Document:</label>
-      <input type="file" id="frontFile" accept="image/*">
+      <input type="file" id="frontFile" accept="image/*" class="hidden" required>
 
       <button type="button" id="captureFront">Capture Front</button>
 
       <!-- Camera stream and photo preview elements -->
-      <video id="cameraStream" class="hidden" autoplay></video>
-      <canvas id="photoPreview" class="hidden"></canvas>
+      <video id="cameraStream" autoplay></video>
+      <canvas id="photoPreview"></canvas>
 
+      <!-- Confirm Buttons -->
       <div id="confirmButtons" class="hidden">
         <button type="button" id="confirmPhoto">Confirm Photo</button>
         <button type="button" id="retryPhoto">Retry Photo</button>
@@ -238,48 +271,60 @@
     const db = getDatabase(app);
     const storage = getStorage(app);
 
-    let stream, canvasContext;
+    let stream = null;
+    let canvasContext = null;
+
+    const captureButton = document.getElementById('captureFront');
+    const video = document.getElementById('cameraStream');
+    const canvas = document.getElementById('photoPreview');
+    const confirmButtons = document.getElementById('confirmButtons');
+    const confirmPhotoButton = document.getElementById('confirmPhoto');
+    const retryPhotoButton = document.getElementById('retryPhoto');
+    const loader = document.getElementById('loader');
 
     // Open the camera with the rear camera (facingMode: environment)
-    document.getElementById('captureFront').addEventListener('click', async () => {
-      const video = document.getElementById('cameraStream');
-      const canvas = document.getElementById('photoPreview');
-      const confirmButtons = document.getElementById('confirmButtons');
-      
+    captureButton.addEventListener('click', async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } });
+        // Richiedi accesso alla fotocamera posteriore
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: "environment" 
+          } 
+        });
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+        captureButton.classList.add('hidden');
+        showToast('Camera aperta. Tocca il video per scattare una foto.', 'success');
       } catch (error) {
-        showToast('Error accessing the camera. Please try again.', 'error');
+        console.error('Error accessing camera:', error);
+        showToast('Errore nell\'accesso alla fotocamera. Verifica le autorizzazioni.', 'error');
+      }
+    });
+
+    // Capture the photo from the camera when video is clicked
+    video.addEventListener('click', () => {
+      if (!stream) {
+        showToast('La fotocamera non è attiva.', 'error');
         return;
       }
 
-      video.srcObject = stream;
-      video.classList.remove('hidden');
-      confirmButtons.classList.add('hidden');
-      canvas.classList.add('hidden');
-    });
-
-    // Capture the photo from the camera
-    document.getElementById('cameraStream').addEventListener('click', () => {
-      const video = document.getElementById('cameraStream');
-      const canvas = document.getElementById('photoPreview');
-      const confirmButtons = document.getElementById('confirmButtons');
       canvasContext = canvas.getContext('2d');
-
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+      // Nascondi il video e mostra il canvas e i pulsanti di conferma
       video.classList.add('hidden');
       canvas.classList.remove('hidden');
       confirmButtons.classList.remove('hidden');
+
+      // Interrompi il flusso della fotocamera
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
     });
 
-    // Confirm or retry the photo
-    document.getElementById('confirmPhoto').addEventListener('click', () => {
-      const canvas = document.getElementById('photoPreview');
-
-      // Convert canvas to Blob and simulate file upload
+    // Confirm the captured photo
+    confirmPhotoButton.addEventListener('click', () => {
       canvas.toBlob(blob => {
         const fileInput = document.getElementById('frontFile');
         const dataTransfer = new DataTransfer();
@@ -287,37 +332,37 @@
         dataTransfer.items.add(file);
         fileInput.files = dataTransfer.files;
 
-        showToast('Photo confirmed. Ready for upload.', 'success');
+        showToast('Foto confermata e pronta per il caricamento.', 'success');
       }, 'image/jpeg');
-      
-      // Stop the camera stream after confirming
-      stream.getTracks().forEach(track => track.stop());
-    });
 
-    document.getElementById('retryPhoto').addEventListener('click', () => {
-      const video = document.getElementById('cameraStream');
-      const canvas = document.getElementById('photoPreview');
-      const confirmButtons = document.getElementById('confirmButtons');
-
-      // Hide canvas and retry with the video stream
+      // Nascondi il canvas e i pulsanti di conferma
       canvas.classList.add('hidden');
       confirmButtons.classList.add('hidden');
-      video.classList.remove('hidden');
+      captureButton.classList.remove('hidden');
+    });
+
+    // Retry capturing the photo
+    retryPhotoButton.addEventListener('click', () => {
+      // Nascondi il canvas e i pulsanti di conferma
+      canvas.classList.add('hidden');
+      confirmButtons.classList.add('hidden');
+
+      // Riapri la fotocamera
+      captureButton.click();
     });
 
     // Show or hide loader
     function showLoader(show) {
-      const loader = document.getElementById('loader');
       loader.style.display = show ? 'block' : 'none';
     }
 
     // Toast Notification
     function showToast(message, type = 'success') {
       const toast = document.createElement('div');
-      toast.className = 'toast ' + type;
+      toast.className = 'toast ' + (type === 'error' ? 'error' : '');
       toast.textContent = message;
       document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
+      setTimeout(() => toast.remove(), 4000);
     }
 
     // Validate form fields before submission
@@ -329,30 +374,30 @@
       const frontFile = document.getElementById('frontFile').files[0];
 
       if (!firstName) {
-        showToast('Please enter the first name.', 'error');
+        showToast('Per favore inserisci il nome.', 'error');
         return false;
       }
       if (!lastName) {
-        showToast('Please enter the last name.', 'error');
+        showToast('Per favore inserisci il cognome.', 'error');
         return false;
       }
       if (!idNumber) {
-        showToast('Please enter the ID number.', 'error');
+        showToast('Per favore inserisci il numero ID.', 'error');
         return false;
       }
       if (!expiryDate) {
-        showToast('Please enter the document expiry date.', 'error');
+        showToast('Per favore inserisci la data di scadenza del documento.', 'error');
         return false;
       }
       if (!frontFile) {
-        showToast('Please upload the front of the document.', 'error');
+        showToast('Per favore carica la foto del fronte del documento.', 'error');
         return false;
       }
 
       return true;
     }
 
-    document.getElementById('memberForm').addEventListener('submit', function (e) {
+    document.getElementById('memberForm').addEventListener('submit', async function (e) {
       e.preventDefault();
 
       if (!validateForm()) {
@@ -368,46 +413,56 @@
 
       const frontFile = document.getElementById('frontFile').files[0];
 
-      const frontRef = storageRef(storage, 'documents/' + idNumber + '_front');
+      const frontRef = storageRef(storage, 'documents/' + idNumber + '_front_' + Date.now());
 
       const registrationTimestamp = Date.now();
 
-      uploadBytes(frontRef, frontFile)
-        .then(() => getDownloadURL(frontRef))
-        .then((url) => {
-          const memberData = {
-            firstName,
-            lastName,
-            idNumber,
-            expiryDate,
-            documentFront: url,
-            registrationTimestamp
-          };
-          return push(ref(db, 'members/'), memberData);
-        })
-        .then(() => {
-          showLoader(false);
-          showToast('Member successfully registered!');
-          document.getElementById('memberForm').reset();
-        })
-        .catch(() => {
-          showLoader(false);
-          showToast('An error occurred during registration. Please try again.', 'error');
-        });
+      try {
+        await uploadBytes(frontRef, frontFile);
+        const url = await getDownloadURL(frontRef);
+
+        const memberData = {
+          firstName,
+          lastName,
+          idNumber,
+          expiryDate,
+          documentFront: url,
+          registrationTimestamp
+        };
+
+        await push(ref(db, 'members/'), memberData);
+
+        showLoader(false);
+        showToast('Membro registrato con successo!', 'success');
+        document.getElementById('memberForm').reset();
+      } catch (error) {
+        console.error('Errore durante la registrazione:', error);
+        showLoader(false);
+        showToast('Si è verificato un errore durante la registrazione. Riprova.', 'error');
+      }
     });
 
     // Timer function for current time
     function updateTime() {
       const timerElement = document.getElementById('timer');
-      const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', year: 'numeric', month: 'numeric', day: 'numeric' };
-      const now = new Date().toLocaleString('en-GB', options);
+      const options = { 
+        hour: '2-digit', 
+        minute: '2-digit', 
+        second: '2-digit', 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit' 
+      };
+      const now = new Date().toLocaleString('it-IT', options);
       timerElement.textContent = `${now}`;
     }
 
     setInterval(updateTime, 1000);
+    updateTime(); // Initial call to display time immediately
   </script>
 </body>
 </html>
+
 
 
 
