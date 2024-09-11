@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Robot - Sales Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #0d0d0d;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #1c1c1c;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        input, button, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: none;
+            background-color: #2c2c2c;
+            color: #39ff14;
+        }
+        button {
+            background-color: #39ff14;
+            color: black;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        button:hover {
+            background-color: #32e613;
+            transform: scale(1.05);
+        }
+        .toast {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #39ff14;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 1000;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: #666;
+        }
+        .logo img {
+            width: 80px;
+            margin-top: 10px;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .navigation-buttons button {
+            width: 48%;
+            padding: 12px;
+            font-size: 1.1rem;
+            background-color: #39ff14;
+            color: black;
+            border-radius: 5px;
+        }
+        .navigation-buttons button:hover {
+            background-color: #32e613;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="logo">
+        <img src="logo.png" alt="Green Robot Logo">
+    </div>
+    <div class="container">
+        <h1>Sales Management</h1>
+        <select id="memberId"></select>
+        <input type="number" id="quantity" placeholder="Enter Quantity Sold (grams)">
+        <input type="number" id="amount" placeholder="Enter Amount (€)">
+        <button id="recordSale">Record Sale</button>
+        <div id="dailyTotal">Total Today: €0</div>
+        <div id="weeklyTotal">Total This Week: €0</div>
+        <div id="monthlyTotal">Total This Month: €0</div>
+        <div id="salesLog"></div>
+        <div id="toast" class="toast"></div>
+
+        <!-- Navigation Buttons -->
+        <div class="navigation-buttons">
+            <button id="goToMembers">Go to Members</button>
+            <button id="goToIndex">Go to Register</button>
+        </div>
+    </div>
+    <footer>© Green Robot - All rights reserved</footer>
+
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+        import { getDatabase, ref, push, onValue } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
+            authDomain: "greenrobot-ede43.firebaseapp.com",
+            databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "greenrobot-ede43",
+            storageBucket: "greenrobot-ede43.appspot.com",
+            messagingSenderId: "41296246884",
+            appId: "1:41296246884:web:0a13e2890e4a824cf60771",
+            measurementId: "G-F3FK6JXBSR"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadMembers();
+            document.getElementById('recordSale').addEventListener('click', addSale);
+            loadSales();
+
+            document.getElementById('goToMembers').addEventListener('click', () => {
+                window.location.href = 'members.html';
+            });
+            document.getElementById('goToIndex').addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        });
+
+        function loadMembers() {
+            const membersRef = ref(db, 'members');
+            const memberDropdown = document.getElementById('memberId');
+            onValue(membersRef, (snapshot) => {
+                snapshot.forEach((child) => {
+                    const member = child.val();
+                    const option = document.createElement('option');
+                    option.value = child.key;
+                    option.textContent = `${member.firstName} ${member.lastName} (ID: ${child.key})`;
+                    memberDropdown.appendChild(option);
+                });
+            });
+        }
+
+        function addSale() {
+            const memberId = document.getElementById('memberId').value;
+            const quantity = parseFloat(document.getElementById('quantity').value);
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            if (!memberId || isNaN(quantity) || isNaN(amount) || quantity <= 0 || amount <= 0) {
+                showToast('Please fill all fields with valid values.', true);
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            const saleData = { memberId, quantity, amount, date: today };
+
+            push(ref(db, 'sales/' + today), saleData).then(() => {
+                showToast('Sale recorded successfully!');
+            }).catch(error => {
+                showToast('Error recording sale: ' + error.message, true);
+            });
+        }
+
+        function loadSales() {
+            const salesRef = ref(db, 'sales');
+            onValue(salesRef, (snapshot) => {
+                let dailyTotal = 0;
+                let weeklyTotal = 0;
+                let monthlyTotal = 0;
+                const today = new Date();
+                const startOfWeek = new Date(today.setDate(today.getDate() - today.getDay()));
+                const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+
+                snapshot.forEach((daySnapshot) => {
+                    const date = new Date(daySnapshot.key);
+                    daySnapshot.forEach((saleSnapshot) => {
+                        const sale = saleSnapshot.val();
+                        if (date.toISOString().split('T')[0] === new Date().toISOString().split('T')[0]) {
+                            dailyTotal += sale.amount;
+                        }
+                        if (date >= startOfWeek) {
+                            weeklyTotal += sale.amount;
+                        }
+                        if (date >= startOfMonth) {
+                            monthlyTotal += sale.amount;
+                        }
+                    });
+                });
+
+                document.getElementById('dailyTotal').textContent = `Total Today: €${dailyTotal.toFixed(2)}`;
+                document.getElementById('weeklyTotal').textContent = `Total This Week: €${weeklyTotal.toFixed(2)}`;
+                document.getElementById('monthlyTotal').textContent = `Total This Month: €${monthlyTotal.toFixed(2)}`;
+            });
+        }
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#d32f2f' : '#39ff14';
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
+
+
+
