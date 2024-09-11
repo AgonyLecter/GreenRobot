@@ -1,465 +1,256 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Green Robot - Member Registration</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
-
-    /* Base Styles */
-    body {
-      font-family: 'Orbitron', sans-serif;
-      background-color: #0d0d0d;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      color: white;
-    }
-
-    h1 {
-      color: #39ff14;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 500px;
-      margin: 20px;
-      padding: 20px;
-      background-color: #1c1c1c;
-      border-radius: 10px;
-      position: relative;
-      animation: ledGlow 1.5s infinite alternate;
-    }
-
-    .logo {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
-
-    .logo img {
-      width: 150px;
-    }
-
-    label {
-      font-size: 1rem;
-      margin-top: 10px;
-    }
-
-    input[type="text"], input[type="date"], input[type="file"] {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #39ff14;
-      border-radius: 5px;
-      box-sizing: border-box;
-      background-color: #333;
-      color: white;
-    }
-
-    button {
-      width: 100%;
-      background-color: #39ff14;
-      color: black;
-      padding: 14px 20px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1.2rem;
-      transition: all 0.3s ease-in-out;
-    }
-
-    button:hover {
-      background-color: #32e613;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    /* Timer Styles */
-    .timer {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.5rem;
-      color: #39ff14;
-      text-align: center;
-      margin-top: 20px;
-      padding: 10px;
-      border: 2px solid #39ff14;
-      border-radius: 10px;
-      box-shadow: 0 0 15px #39ff14;
-      animation: ledGlow 2s infinite alternate;
-    }
-
-    @keyframes ledGlow {
-      0% {
-        box-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14, 0 0 30px #39ff14, 0 0 40px #39ff14;
-      }
-      100% {
-        box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14, 0 0 50px #39ff14, 0 0 60px #39ff14;
-      }
-    }
-
-    footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 0.8rem;
-      color: #666;
-    }
-
-    @media screen and (max-width: 600px) {
-      .container {
-        margin: 0 10px;
-      }
-
-      button {
-        font-size: 1rem;
-      }
-
-      label, input {
-        font-size: 1rem;
-      }
-    }
-
-    /* Toast Notification Styles */
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background-color: #39ff14;
-      color: black;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-      animation: fadeInOut 4s ease-in-out;
-      z-index: 1000;
-    }
-
-    .toast.error {
-      background-color: #d32f2f;
-      color: white;
-    }
-
-    @keyframes fadeInOut {
-      0% { opacity: 0; }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    /* Camera Styles */
-    #cameraStream, #photoPreview {
-      display: none;
-      width: 100%;
-      border-radius: 10px;
-      margin-top: 10px;
-    }
-
-    #photoPreview {
-      display: block;
-    }
-
-    /* Confirm Buttons Styles */
-    #confirmButtons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
-
-    #confirmButtons button {
-      width: 48%;
-    }
-
-    /* Loader Styles */
-    .loader {
-      border: 8px solid #f3f3f3;
-      border-top: 8px solid #39ff14;
-      border-radius: 50%;
-      width: 60px;
-      height: 60px;
-      animation: spin 2s linear infinite;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      display: none;
-      z-index: 1000;
-    }
-
-    @keyframes spin {
-      0% { transform: translate(-50%, -50%) rotate(0deg); }
-      100% { transform: translate(-50%, -50%) rotate(360deg); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Green Robot - Member Registration</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: #0d0d0d;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        h1 {
+            color: #39ff14;
+            text-align: center;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
+            animation: pulse 1.5s infinite;
+            font-size: 2.5rem;
+        }
+        .container {
+            width: 100%;
+            max-width: 450px;
+            margin: 10px;
+            padding: 20px;
+            background-color: #1c1c1c;
+            border-radius: 15px;
+            box-shadow: 0 0 40px #39ff14, 0 0 60px #39ff14;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            animation: enterFromBottom 1s ease-out;
+        }
+        form {
+            width: 100%;
+        }
+        label {
+            color: #aaa;
+            margin: 10px 0;
+            display: block;
+            font-size: 1.1rem;
+        }
+        input[type="text"], input[type="date"], input[type="file"] {
+            width: calc(100% - 20px);
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #39ff14;
+            border-radius: 8px;
+            background-color: #2c2c2c;
+            color: #39ff14;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        input[type="text"]:focus, input[type="date"]:focus, input[type="file"]:hover {
+            background-color: #1a1a1a;
+            border-color: #32e613;
+        }
+        .futuristic-button {
+            width: calc(100% - 10px);
+            background-color: #39ff14;
+            color: black;
+            padding: 15px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .futuristic-button:hover {
+            background-color: #32e613;
+            transform: scale(1.1);
+            box-shadow: 0 0 40px #32e613, 0 0 80px #32e613;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #39ff14;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            display: none;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+        #clock {
+            font-size: 1.5rem;
+            color: #39ff14;
+            text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
+            margin-bottom: 20px;
+        }
+        @keyframes pulse {
+            0% { text-shadow: 0 0 20px #39ff14; }
+            50% { text-shadow: 0 0 40px #39ff14; }
+            100% { text-shadow: 0 0 20px #39ff14; }
+        }
+        @keyframes enterFromBottom {
+            0% {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
+    <div class="logo">
+        <img src="logo.png" alt="Green Robot Logo" style="width: 100px;">
+    </div>
+    <div id="clock"></div>
+    <h1>Member Registration</h1>
+    <div class="container">
+        <form id="memberForm">
+            <label for="firstName">First Name:</label>
+            <input type="text" id="firstName" placeholder="Enter first name">
+            <label for="lastName">Last Name:</label>
+            <input type="text" id="lastName" placeholder="Enter last name">
+            <label for="idNumber">ID Number (Driver's License, Passport, etc.):</label>
+            <input type="text" id="idNumber" placeholder="Enter ID number">
+            <label for="expiryDate">Document Expiry Date:</label>
+            <input type="date" id="expiryDate">
+            <label for="frontFile">Upload Front of Document:</label>
+            <input type="file" id="frontFile" accept="image/*">
+            <label for="backFile">Upload Back of Document (Optional):</label>
+            <input type="file" id="backFile" accept="image/*">
+            <div class="navigation-buttons">
+                <button type="submit" id="registerButton" class="futuristic-button">Register Member</button>
+                <button type="reset" class="futuristic-button">Clear Form</button>
+                <button id="membersButton" class="futuristic-button">Go to Members</button>
+                <button id="salesButton" class="futuristic-button">Go to Sales</button>
+            </div>
+        </form>
+    </div>
+    <div id="toast" class="toast"></div>
+    <footer>© Green Robot - All rights reserved</footer>
 
-  <div class="logo">
-    <img src="logo.png" alt="Green Robot Logo">
-  </div>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
 
-  <h1>Member Registration</h1>
-
-  <!-- Timer Section -->
-  <div id="timer" class="timer"></div>
-
-  <div class="container">
-    <form id="memberForm">
-      <label for="firstName">First Name:</label>
-      <input type="text" id="firstName" placeholder="Enter first name" required>
-
-      <label for="lastName">Last Name:</label>
-      <input type="text" id="lastName" placeholder="Enter last name" required>
-
-      <label for="idNumber">ID Number (Driver's License, Passport, any ID etc.):</label>
-      <input type="text" id="idNumber" placeholder="Enter ID number" required>
-
-      <label for="expiryDate">Document Expiry Date:</label>
-      <input type="date" id="expiryDate" required>
-
-      <!-- File Upload for Front of Document -->
-      <label for="frontFile">Upload Front of Document:</label>
-      <input type="file" id="frontFile" accept="image/*" class="hidden" required>
-
-      <button type="button" id="captureFront">Capture Front</button>
-
-      <!-- Camera stream and photo preview elements -->
-      <video id="cameraStream" autoplay></video>
-      <canvas id="photoPreview"></canvas>
-
-      <!-- Confirm Buttons -->
-      <div id="confirmButtons" class="hidden">
-        <button type="button" id="confirmPhoto">Confirm Photo</button>
-        <button type="button" id="retryPhoto">Retry Photo</button>
-      </div>
-
-      <button type="submit" id="registerButton">Register Member</button>
-    </form>
-
-    <div class="loader" id="loader"></div>
-  </div>
-
-  <footer>© Green Robot - All rights reserved</footer>
-
-  <!-- Firebase Integration and Custom Scripts -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
-    import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
-    import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
-      authDomain: "greenrobot-ede43.firebaseapp.com",
-      databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "greenrobot-ede43",
-      storageBucket: "greenrobot-ede43.appspot.com",
-      messagingSenderId: "41296246884",
-      appId: "1:41296246884:web:0a13e2890e4a824cf60771",
-      measurementId: "G-F3FK6JXBSR"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const storage = getStorage(app);
-
-    let stream = null;
-    let canvasContext = null;
-
-    const captureButton = document.getElementById('captureFront');
-    const video = document.getElementById('cameraStream');
-    const canvas = document.getElementById('photoPreview');
-    const confirmButtons = document.getElementById('confirmButtons');
-    const confirmPhotoButton = document.getElementById('confirmPhoto');
-    const retryPhotoButton = document.getElementById('retryPhoto');
-    const loader = document.getElementById('loader');
-
-    // Open the camera with the rear camera (facingMode: environment)
-    captureButton.addEventListener('click', async () => {
-      try {
-        // Richiedi accesso alla fotocamera posteriore
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { 
-            facingMode: "environment" 
-          } 
-        });
-        video.srcObject = stream;
-        video.classList.remove('hidden');
-        captureButton.classList.add('hidden');
-        showToast('Camera aperta. Tocca il video per scattare una foto.', 'success');
-      } catch (error) {
-        console.error('Error accessing camera:', error);
-        showToast('Errore nell\'accesso alla fotocamera. Verifica le autorizzazioni.', 'error');
-      }
-    });
-
-    // Capture the photo from the camera when video is clicked
-    video.addEventListener('click', () => {
-      if (!stream) {
-        showToast('La fotocamera non è attiva.', 'error');
-        return;
-      }
-
-      canvasContext = canvas.getContext('2d');
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-      canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      // Nascondi il video e mostra il canvas e i pulsanti di conferma
-      video.classList.add('hidden');
-      canvas.classList.remove('hidden');
-      confirmButtons.classList.remove('hidden');
-
-      // Interrompi il flusso della fotocamera
-      stream.getTracks().forEach(track => track.stop());
-      stream = null;
-    });
-
-    // Confirm the captured photo
-    confirmPhotoButton.addEventListener('click', () => {
-      canvas.toBlob(blob => {
-        const fileInput = document.getElementById('frontFile');
-        const dataTransfer = new DataTransfer();
-        const file = new File([blob], 'front_document.jpg', { type: 'image/jpeg' });
-        dataTransfer.items.add(file);
-        fileInput.files = dataTransfer.files;
-
-        showToast('Foto confermata e pronta per il caricamento.', 'success');
-      }, 'image/jpeg');
-
-      // Nascondi il canvas e i pulsanti di conferma
-      canvas.classList.add('hidden');
-      confirmButtons.classList.add('hidden');
-      captureButton.classList.remove('hidden');
-    });
-
-    // Retry capturing the photo
-    retryPhotoButton.addEventListener('click', () => {
-      // Nascondi il canvas e i pulsanti di conferma
-      canvas.classList.add('hidden');
-      confirmButtons.classList.add('hidden');
-
-      // Riapri la fotocamera
-      captureButton.click();
-    });
-
-    // Show or hide loader
-    function showLoader(show) {
-      loader.style.display = show ? 'block' : 'none';
-    }
-
-    // Toast Notification
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = 'toast ' + (type === 'error' ? 'error' : '');
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 4000);
-    }
-
-    // Validate form fields before submission
-    function validateForm() {
-      const firstName = document.getElementById('firstName').value.trim();
-      const lastName = document.getElementById('lastName').value.trim();
-      const idNumber = document.getElementById('idNumber').value.trim();
-      const expiryDate = document.getElementById('expiryDate').value;
-      const frontFile = document.getElementById('frontFile').files[0];
-
-      if (!firstName) {
-        showToast('Per favore inserisci il nome.', 'error');
-        return false;
-      }
-      if (!lastName) {
-        showToast('Per favore inserisci il cognome.', 'error');
-        return false;
-      }
-      if (!idNumber) {
-        showToast('Per favore inserisci il numero ID.', 'error');
-        return false;
-      }
-      if (!expiryDate) {
-        showToast('Per favore inserisci la data di scadenza del documento.', 'error');
-        return false;
-      }
-      if (!frontFile) {
-        showToast('Per favore carica la foto del fronte del documento.', 'error');
-        return false;
-      }
-
-      return true;
-    }
-
-    document.getElementById('memberForm').addEventListener('submit', async function (e) {
-      e.preventDefault();
-
-      if (!validateForm()) {
-        return;
-      }
-
-      showLoader(true);
-
-      const firstName = document.getElementById('firstName').value;
-      const lastName = document.getElementById('lastName').value;
-      const idNumber = document.getElementById('idNumber').value;
-      const expiryDate = document.getElementById('expiryDate').value;
-
-      const frontFile = document.getElementById('frontFile').files[0];
-
-      const frontRef = storageRef(storage, 'documents/' + idNumber + '_front_' + Date.now());
-
-      const registrationTimestamp = Date.now();
-
-      try {
-        await uploadBytes(frontRef, frontFile);
-        const url = await getDownloadURL(frontRef);
-
-        const memberData = {
-          firstName,
-          lastName,
-          idNumber,
-          expiryDate,
-          documentFront: url,
-          registrationTimestamp
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
+            authDomain: "greenrobot-ede43.firebaseapp.com",
+            databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "greenrobot-ede43",
+            storageBucket: "greenrobot-ede43.appspot.com",
+            messagingSenderId: "41296246884",
+            appId: "1:41296246884:web:0a13e2890e4a824cf60771",
+            measurementId: "G-F3FK6JXBSR"
         };
 
-        await push(ref(db, 'members/'), memberData);
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const storage = getStorage(app);
 
-        showLoader(false);
-        showToast('Membro registrato con successo!', 'success');
-        document.getElementById('memberForm').reset();
-      } catch (error) {
-        console.error('Errore durante la registrazione:', error);
-        showLoader(false);
-        showToast('Si è verificato un errore durante la registrazione. Riprova.', 'error');
-      }
-    });
+        document.addEventListener('DOMContentLoaded', function() {
+            const clock = document.getElementById('clock');
+            const toast = document.getElementById('toast');
+            function updateClock() {
+                const now = new Date();
+                clock.innerHTML = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            }
+            setInterval(updateClock, 1000);
+            updateClock();
 
-    // Timer function for current time
-    function updateTime() {
-      const timerElement = document.getElementById('timer');
-      const options = { 
-        hour: '2-digit', 
-        minute: '2-digit', 
-        second: '2-digit', 
-        year: 'numeric', 
-        month: '2-digit', 
-        day: '2-digit' 
-      };
-      const now = new Date().toLocaleString('it-IT', options);
-      timerElement.textContent = `${now}`;
-    }
+            function showToast(message) {
+                toast.textContent = message;
+                toast.style.display = 'block';
+                setTimeout(() => toast.style.display = 'none', 3000);
+            }
 
-    setInterval(updateTime, 1000);
-    updateTime(); // Initial call to display time immediately
-  </script>
+            document.getElementById('memberForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const firstName = document.getElementById('firstName').value.trim();
+                const lastName = document.getElementById('lastName').value.trim();
+                const idNumber = document.getElementById('idNumber').value.trim();
+                const expiryDate = document.getElementById('expiryDate').value;
+                const frontFile = document.getElementById('frontFile').files[0];
+                const backFile = document.getElementById('backFile').files[0];
+
+                if (!firstName || !lastName || !idNumber || !expiryDate || (!frontFile && !backFile)) {
+                    showToast('All fields are required and at least one photo must be uploaded.');
+                    return;
+                }
+
+                const uploads = [];
+                let frontUrl = '', backUrl = '';
+
+                if (frontFile) {
+                    const frontRef = storageRef(storage, 'documents/' + idNumber + '_front');
+                    uploads.push(uploadBytes(frontRef, frontFile).then(() => getDownloadURL(frontRef).then(url => frontUrl = url)));
+                }
+
+                if (backFile) {
+                    const backRef = storageRef(storage, 'documents/' + idNumber + '_back');
+                    uploads.push(uploadBytes(backRef, backFile).then(() => getDownloadURL(backRef).then(url => backUrl = url)));
+                }
+
+                try {
+                    await Promise.all(uploads);
+
+                    const memberData = {
+                        firstName, lastName, idNumber, expiryDate,
+                        documentFront: frontUrl || '',
+                        documentBack: backUrl || '',
+                        registrationTimestamp: Date.now()
+                    };
+
+                    await push(ref(db, 'members/'), memberData);
+                    showToast('Member Registered Successfully!');
+                    this.reset();
+                } catch (error) {
+                    showToast('Error during registration. Try again.');
+                }
+            });
+
+            document.getElementById('membersButton').addEventListener('click', function() {
+                window.location.href = 'members.html';
+            });
+            document.getElementById('salesButton').addEventListener('click', function() {
+                window.location.href = 'sales.html';
+            });
+        });
+    </script>
 </body>
 </html>
 
