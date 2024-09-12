@@ -246,6 +246,12 @@
             document.getElementById('membersButton').addEventListener('click', function() {
                 window.location.href = 'members.html';
             });
+                // Disabilita tasto destro e F12 per la sicurezza
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+      }
+    });
             document.getElementById('salesButton').addEventListener('click', function() {
                 window.location.href = 'sales.html';
             });
