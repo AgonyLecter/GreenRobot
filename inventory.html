@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Green Robot - Inventory Management</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background-color: #0d0d0d;
+      margin: 0;
+      padding: 0;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      color: #39ff14;
+      margin: 20px;
+      text-align: center;
+    }
+
+    .logo {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .logo img {
+      width: 150px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 600px;
+      padding: 20px;
+      background-color: #1c1c1c;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .input-container {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 12px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #2c2c2c;
+      color: #39ff14;
+      width: calc(100% - 20px);
+    }
+
+    button {
+      background-color: #39ff14;
+      color: black;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #32e613;
+      transform: scale(1.05);
+    }
+
+    .item-card {
+      background-color: #1c1c1c;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .item-info {
+      flex: 1;
+      text-align: left;
+    }
+
+    .item-info h2 {
+      margin: 0;
+      color: #39ff14;
+    }
+
+    .item-actions input {
+      width: 80px;
+      margin-right: 10px;
+      text-align: center;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #39ff14;
+      color: black;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1000;
+    }
+
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .navigation-buttons button {
+      width: 32%;
+      padding: 12px;
+      font-size: 1.1rem;
+      background-color: #39ff14;
+      color: black;
+      border-radius: 5px;
+    }
+
+    .navigation-buttons button:hover {
+      background-color: #32e613;
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+  <div class="logo">
+    <img src="logo.png" alt="Green Robot Logo">
+  </div>
+  
+  <h1>Inventory Management</h1>
+
+  <div class="container">
+    <div class="input-container">
+      <input type="text" id="itemName" placeholder="Enter Item Name">
+      <input type="number" id="itemQuantity" placeholder="Enter Item Quantity">
+      <button id="addItem">Add Item</button>
+    </div>
+
+    <div id="itemsContainer"></div>
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Navigation Buttons -->
+    <div class="navigation-buttons">
+      <button id="goToMembers">Go to Members</button>
+      <button id="goToSales">Go to Sales</button>
+      <button id="goToRegister">Go to Register</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
+    import { getDatabase, ref, set, push, onValue, update } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
+      authDomain: "greenrobot-ede43.firebaseapp.com",
+      databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "greenrobot-ede43",
+      storageBucket: "greenrobot-ede43.appspot.com",
+      messagingSenderId: "41296246884",
+      appId: "1:41296246884:web:0a13e2890e4a824cf60771",
+      measurementId: "G-F3FK6JXBSR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const itemsRef = ref(db, 'inventory');
+
+    document.getElementById('addItem').addEventListener('click', () => {
+      const itemName = document.getElementById('itemName').value.trim();
+      const itemQuantity = parseInt(document.getElementById('itemQuantity').value);
+
+      if (itemName && itemQuantity > 0) {
+        const newItemRef = push(itemsRef);
+        set(newItemRef, { name: itemName, quantity: itemQuantity })
+          .then(() => showToast('Item added successfully!'))
+          .catch(() => showToast('Error adding item', true));
+      } else {
+        showToast('Please enter valid name and quantity', true);
+      }
+    });
+
+    function loadItems() {
+      onValue(itemsRef, (snapshot) => {
+        const itemsContainer = document.getElementById('itemsContainer');
+        itemsContainer.innerHTML = '';
+
+        snapshot.forEach((childSnapshot) => {
+          const item = childSnapshot.val();
+          const itemId = childSnapshot.key;
+          itemsContainer.appendChild(createItemCard(item, itemId));
+        });
+      });
+    }
+
+    function createItemCard(item, itemId) {
+      const card = document.createElement('div');
+      card.className = 'item-card';
+
+      const itemInfo = document.createElement('div');
+      itemInfo.className = 'item-info';
+      itemInfo.innerHTML = `<h2>${item.name}</h2><p>Quantity: ${item.quantity}</p>`;
+      card.appendChild(itemInfo);
+
+      const itemActions = document.createElement('div');
+      itemActions.className = 'item-actions';
+      const quantityInput = document.createElement('input');
+      quantityInput.type = 'number';
+      quantityInput.value = item.quantity;
+
+      const updateButton = document.createElement('button');
+      updateButton.textContent = 'Update';
+      updateButton.onclick = () => updateItemQuantity(itemId, parseInt(quantityInput.value));
+
+      itemActions.appendChild(quantityInput);
+      itemActions.appendChild(updateButton);
+      card.appendChild(itemActions);
+
+      return card;
+    }
+
+    function updateItemQuantity(itemId, newQuantity) {
+      if (newQuantity > 0) {
+        update(ref(db, 'inventory/' + itemId), { quantity: newQuantity })
+          .then(() => showToast('Quantity updated successfully!'))
+          .catch(() => showToast('Error updating quantity', true));
+      } else {
+        showToast('Please enter a valid quantity', true);
+      }
+    }
+
+    function showToast(message, isError = false) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.style.backgroundColor = isError ? '#d32f2f' : '#39ff14';
+      toast.style.display = 'block';
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+
+    loadItems();
+
+    document.getElementById('goToMembers').addEventListener('click', () => {
+      window.location.href = 'members.html';
+    });
+
+    document.getElementById('goToSales').addEventListener('click', () => {
+      window.location.href = 'sales.html';
+    });
+
+    document.getElementById('goToRegister').addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    // Disabilita tasto destro e F12 per la sicurezza
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener('contextmenu', function(e) {
+      e.preventDefault();
+    });
+  </script>
+</body>
+</html>
+
+
