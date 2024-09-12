@@ -18,18 +18,25 @@
             justify-content: center;
             min-height: 100vh;
         }
+
         h1 {
             color: #39ff14;
             text-align: center;
             margin-bottom: 20px;
             text-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
-            animation: pulse 1.5s infinite;
+            animation: glow 1.5s infinite;
             font-size: 2.5rem;
         }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 20px #39ff14; }
+            50% { text-shadow: 0 0 40px #39ff14; }
+            100% { text-shadow: 0 0 20px #39ff14; }
+        }
+
         .container {
             width: 100%;
             max-width: 450px;
-            margin: 10px;
             padding: 20px;
             background-color: #1c1c1c;
             border-radius: 15px;
@@ -37,18 +44,15 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow: hidden;
-            animation: enterFromBottom 1s ease-out;
         }
-        form {
-            width: 100%;
-        }
+
         label {
             color: #aaa;
             margin: 10px 0;
             display: block;
             font-size: 1.1rem;
         }
+
         input[type="text"], input[type="date"], input[type="file"] {
             width: calc(100% - 20px);
             padding: 12px;
@@ -59,10 +63,12 @@
             color: #39ff14;
             transition: background-color 0.3s ease, border-color 0.3s ease;
         }
+
         input[type="text"]:focus, input[type="date"]:focus, input[type="file"]:hover {
             background-color: #1a1a1a;
             border-color: #32e613;
         }
+
         .futuristic-button {
             width: calc(100% - 10px);
             background-color: #39ff14;
@@ -78,17 +84,22 @@
             box-shadow: 0 0 20px #39ff14, 0 0 40px #39ff14;
             transition: background-color 0.3s ease, transform 0.3s ease;
         }
+
         .futuristic-button:hover {
             background-color: #32e613;
             transform: scale(1.1);
             box-shadow: 0 0 40px #32e613, 0 0 80px #32e613;
         }
+
         .navigation-buttons {
             display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             justify-content: space-between;
             width: 100%;
             margin-top: 20px;
         }
+
         .toast {
             position: fixed;
             bottom: 10px;
@@ -102,41 +113,32 @@
             z-index: 1000;
             display: none;
         }
+
         footer {
             text-align: center;
             margin-top: 20px;
             font-size: 0.85rem;
             color: #666;
         }
+
         #clock {
             font-size: 1.5rem;
             color: #39ff14;
             text-shadow: 0 0 10px #39ff14, 0 0 20px #39ff14;
             margin-bottom: 20px;
         }
-        @keyframes pulse {
-            0% { text-shadow: 0 0 20px #39ff14; }
-            50% { text-shadow: 0 0 40px #39ff14; }
-            100% { text-shadow: 0 0 20px #39ff14; }
-        }
-        @keyframes enterFromBottom {
-            0% {
-                transform: translateY(100px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
+
     </style>
 </head>
 <body oncontextmenu="return false;">
     <div class="logo">
         <img src="logo.png" alt="Green Robot Logo" style="width: 100px;">
     </div>
+
     <div id="clock"></div>
+
     <h1>Member Registration</h1>
+
     <div class="container">
         <form id="memberForm">
             <label for="firstName">First Name:</label>
@@ -151,15 +153,19 @@
             <input type="file" id="frontFile" accept="image/*">
             <label for="backFile">Upload Back of Document (Optional):</label>
             <input type="file" id="backFile" accept="image/*">
+
             <div class="navigation-buttons">
                 <button type="submit" id="registerButton" class="futuristic-button">Register Member</button>
                 <button type="reset" class="futuristic-button">Clear Form</button>
                 <button id="membersButton" class="futuristic-button">Go to Members</button>
                 <button id="salesButton" class="futuristic-button">Go to Sales</button>
+                <button id="inventoryButton" class="futuristic-button">Go to Inventory</button>
             </div>
         </form>
     </div>
+
     <div id="toast" class="toast"></div>
+
     <footer>© Green Robot - All rights reserved</footer>
 
     <script type="module">
@@ -185,6 +191,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const clock = document.getElementById('clock');
             const toast = document.getElementById('toast');
+
             function updateClock() {
                 const now = new Date();
                 clock.innerHTML = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
@@ -246,14 +253,23 @@
             document.getElementById('membersButton').addEventListener('click', function() {
                 window.location.href = 'members.html';
             });
-                // Disabilita tasto destro e F12 per la sicurezza
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-        e.preventDefault();
-      }
-    });
+
             document.getElementById('salesButton').addEventListener('click', function() {
                 window.location.href = 'sales.html';
+            });
+
+            document.getElementById('inventoryButton').addEventListener('click', function() {
+                window.location.href = 'inventory.html';
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                    e.preventDefault();
+                }
+            });
+
+            window.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
             });
         });
     </script>
