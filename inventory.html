@@ -35,11 +35,11 @@
 
     .container {
       width: 100%;
-      max-width: 600px;
+      max-width: 700px;
       padding: 20px;
       background-color: #1c1c1c;
       border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
     }
 
     .input-container {
@@ -52,7 +52,7 @@
       padding: 12px;
       margin-top: 10px;
       margin-bottom: 10px;
-      border-radius: 5px;
+      border-radius: 8px;
       border: none;
       background-color: #2c2c2c;
       color: #39ff14;
@@ -73,14 +73,20 @@
     }
 
     .item-card {
-      background-color: #1c1c1c;
-      padding: 15px;
-      margin: 10px 0;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+      background-color: #2a2a2a;
+      padding: 20px;
+      margin: 15px 0;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4), 0 0 15px rgba(57, 255, 20, 0.6);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .item-card:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 25px rgba(57, 255, 20, 0.8), 0 0 25px rgba(57, 255, 20, 1);
     }
 
     .item-info {
@@ -91,12 +97,38 @@
     .item-info h2 {
       margin: 0;
       color: #39ff14;
+      font-size: 1.5rem;
+    }
+
+    .item-info p {
+      color: #999;
+      margin-top: 5px;
+    }
+
+    .item-actions {
+      display: flex;
+      align-items: center;
     }
 
     .item-actions input {
       width: 80px;
       margin-right: 10px;
       text-align: center;
+      padding: 10px;
+      border-radius: 5px;
+      background-color: #1a1a1a;
+      border: 1px solid #39ff14;
+      color: #39ff14;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+    }
+
+    .delete-button {
+      background-color: #d32f2f;
+      color: white;
     }
 
     .toast {
@@ -126,7 +158,8 @@
       font-size: 1.1rem;
       background-color: #39ff14;
       color: black;
-      border-radius: 5px;
+      border-radius: 8px;
+      transition: background-color 0.3s ease, transform 0.3s ease;
     }
 
     .navigation-buttons button:hover {
@@ -163,7 +196,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-    import { getDatabase, ref, set, push, onValue, update } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+    import { getDatabase, ref, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
 
     const firebaseConfig = {
       apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
@@ -214,34 +247,53 @@
 
       const itemInfo = document.createElement('div');
       itemInfo.className = 'item-info';
-      itemInfo.innerHTML = `<h2>${item.name}</h2><p>Quantity: ${item.quantity}</p>`;
-      card.appendChild(itemInfo);
+      const itemNameEditable = document.createElement('input');
+      itemNameEditable.type = 'text';
+      itemNameEditable.value = item.name;
+      itemNameEditable.style.width = '150px';
 
-      const itemActions = document.createElement('div');
-      itemActions.className = 'item-actions';
       const quantityInput = document.createElement('input');
       quantityInput.type = 'number';
       quantityInput.value = item.quantity;
 
+      const itemActions = document.createElement('div');
+      itemActions.className = 'action-buttons';
+
       const updateButton = document.createElement('button');
       updateButton.textContent = 'Update';
-      updateButton.onclick = () => updateItemQuantity(itemId, parseInt(quantityInput.value));
+      updateButton.onclick = () => updateItem(itemId, itemNameEditable.value, parseInt(quantityInput.value));
+
+      const deleteButton = document.createElement('button');
+      deleteButton.textContent = 'Delete';
+      deleteButton.className = 'delete-button';
+      deleteButton.onclick = () => deleteItem(itemId);
+
+      itemInfo.appendChild(itemNameEditable);
+      card.appendChild(itemInfo);
 
       itemActions.appendChild(quantityInput);
       itemActions.appendChild(updateButton);
+      itemActions.appendChild(deleteButton);
+
       card.appendChild(itemActions);
 
       return card;
     }
 
-    function updateItemQuantity(itemId, newQuantity) {
-      if (newQuantity > 0) {
-        update(ref(db, 'inventory/' + itemId), { quantity: newQuantity })
-          .then(() => showToast('Quantity updated successfully!'))
-          .catch(() => showToast('Error updating quantity', true));
+    function updateItem(itemId, newName, newQuantity) {
+      if (newName && newQuantity > 0) {
+        update(ref(db, 'inventory/' + itemId), { name: newName, quantity: newQuantity })
+          .then(() => showToast('Item updated successfully!'))
+          .catch(() => showToast('Error updating item', true));
       } else {
-        showToast('Please enter a valid quantity', true);
+        showToast('Please enter valid name and quantity', true);
       }
+    }
+
+    function deleteItem(itemId) {
+      remove(ref(db, 'inventory/' + itemId))
+        .then(() => showToast('Item deleted successfully!'))
+        .catch(() => showToast('Error deleting item', true));
     }
 
     function showToast(message, isError = false) {
@@ -281,5 +333,6 @@
   </script>
 </body>
 </html>
+
 
 
