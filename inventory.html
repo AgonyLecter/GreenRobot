@@ -82,6 +82,7 @@
       justify-content: space-between;
       align-items: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      flex-wrap: wrap;
     }
 
     .item-card:hover {
@@ -92,37 +93,43 @@
     .item-info {
       flex: 1;
       text-align: left;
+      overflow: hidden;
     }
 
-    .item-info h2 {
-      margin: 0;
+    .item-info input {
+      font-size: 1.2rem;
+      width: 100%;
+      background: transparent;
+      border: none;
       color: #39ff14;
-      font-size: 1.5rem;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
-    .item-info p {
-      color: #999;
-      margin-top: 5px;
+    .item-info input:focus {
+      outline: none;
     }
 
     .item-actions {
       display: flex;
       align-items: center;
+      gap: 10px;
     }
 
     .item-actions input {
       width: 80px;
-      margin-right: 10px;
-      text-align: center;
       padding: 10px;
       border-radius: 5px;
       background-color: #1a1a1a;
       border: 1px solid #39ff14;
       color: #39ff14;
+      text-align: center;
     }
 
     .action-buttons {
       display: flex;
+      flex-wrap: wrap;
       gap: 10px;
     }
 
@@ -165,6 +172,16 @@
     .navigation-buttons button:hover {
       background-color: #32e613;
       transform: scale(1.05);
+    }
+
+    @media (max-width: 600px) {
+      .item-info input {
+        font-size: 1rem;
+      }
+
+      .item-actions input {
+        width: 60px;
+      }
     }
   </style>
 </head>
@@ -250,14 +267,13 @@
       const itemNameEditable = document.createElement('input');
       itemNameEditable.type = 'text';
       itemNameEditable.value = item.name;
-      itemNameEditable.style.width = '150px';
 
       const quantityInput = document.createElement('input');
       quantityInput.type = 'number';
       quantityInput.value = item.quantity;
 
       const itemActions = document.createElement('div');
-      itemActions.className = 'action-buttons';
+      itemActions.className = 'item-actions';
 
       const updateButton = document.createElement('button');
       updateButton.textContent = 'Update';
@@ -333,6 +349,5 @@
   </script>
 </body>
 </html>
-
 
 
