@@ -82,33 +82,17 @@
       justify-content: space-between;
       align-items: center;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      flex-wrap: wrap;
-    }
-
-    .item-card:hover {
-      transform: scale(1.03);
-      box-shadow: 0 8px 25px rgba(57, 255, 20, 0.8), 0 0 25px rgba(57, 255, 20, 1);
     }
 
     .item-info {
       flex: 1;
       text-align: left;
-      overflow: hidden;
     }
 
-    .item-info input {
-      font-size: 1.2rem;
-      width: 100%;
-      background: transparent;
-      border: none;
+    .item-info h2 {
+      margin: 0;
       color: #39ff14;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      overflow: hidden;
-    }
-
-    .item-info input:focus {
-      outline: none;
+      font-size: 1.5rem;
     }
 
     .item-actions {
@@ -119,69 +103,38 @@
 
     .item-actions input {
       width: 80px;
+      text-align: center;
       padding: 10px;
       border-radius: 5px;
       background-color: #1a1a1a;
       border: 1px solid #39ff14;
       color: #39ff14;
-      text-align: center;
     }
 
-    .action-buttons {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+    .action-buttons button {
+      background-color: #39ff14;
+      color: black;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 8px;
     }
 
-    .delete-button {
+    .action-buttons button.delete {
       background-color: #d32f2f;
       color: white;
     }
 
-    .toast {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
+    .quantity-buttons button {
       background-color: #39ff14;
       color: black;
-      padding: 10px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-      display: none;
-      z-index: 1000;
-    }
-
-    .navigation-buttons {
-      display: flex;
-      justify-content: space-between;
-      width: 100%;
-      margin-top: 20px;
-    }
-
-    .navigation-buttons button {
-      width: 32%;
-      padding: 12px;
-      font-size: 1.1rem;
-      background-color: #39ff14;
-      color: black;
+      padding: 10px 15px;
+      border: none;
       border-radius: 8px;
-      transition: background-color 0.3s ease, transform 0.3s ease;
     }
 
-    .navigation-buttons button:hover {
-      background-color: #32e613;
-      transform: scale(1.05);
-    }
-
-    @media (max-width: 600px) {
-      .item-info input {
-        font-size: 1rem;
-      }
-
-      .item-actions input {
-        width: 60px;
-      }
+    .quantity-buttons button.decrease {
+      background-color: #d32f2f;
+      color: white;
     }
   </style>
 </head>
@@ -200,15 +153,6 @@
     </div>
 
     <div id="itemsContainer"></div>
-
-    <div class="toast" id="toast"></div>
-
-    <!-- Navigation Buttons -->
-    <div class="navigation-buttons">
-      <button id="goToMembers">Go to Members</button>
-      <button id="goToSales">Go to Sales</button>
-      <button id="goToRegister">Go to Register</button>
-    </div>
   </div>
 
   <script type="module">
@@ -268,12 +212,31 @@
       itemNameEditable.type = 'text';
       itemNameEditable.value = item.name;
 
+      const itemActions = document.createElement('div');
+      itemActions.className = 'item-actions';
+
+      const quantityButtons = document.createElement('div');
+      quantityButtons.className = 'quantity-buttons';
+
       const quantityInput = document.createElement('input');
       quantityInput.type = 'number';
       quantityInput.value = item.quantity;
 
-      const itemActions = document.createElement('div');
-      itemActions.className = 'item-actions';
+      const increaseButton = document.createElement('button');
+      increaseButton.textContent = '+';
+      increaseButton.onclick = () => updateItem(itemId, itemNameEditable.value, parseInt(quantityInput.value) + 1);
+
+      const decreaseButton = document.createElement('button');
+      decreaseButton.textContent = '-';
+      decreaseButton.onclick = () => {
+        if (parseInt(quantityInput.value) > 0) {
+          updateItem(itemId, itemNameEditable.value, parseInt(quantityInput.value) - 1);
+        }
+      };
+
+      quantityButtons.appendChild(decreaseButton);
+      quantityButtons.appendChild(quantityInput);
+      quantityButtons.appendChild(increaseButton);
 
       const updateButton = document.createElement('button');
       updateButton.textContent = 'Update';
@@ -284,20 +247,19 @@
       deleteButton.className = 'delete-button';
       deleteButton.onclick = () => deleteItem(itemId);
 
-      itemInfo.appendChild(itemNameEditable);
-      card.appendChild(itemInfo);
-
-      itemActions.appendChild(quantityInput);
+      itemActions.appendChild(quantityButtons);
       itemActions.appendChild(updateButton);
       itemActions.appendChild(deleteButton);
 
+      itemInfo.appendChild(itemNameEditable);
+      card.appendChild(itemInfo);
       card.appendChild(itemActions);
 
       return card;
     }
 
     function updateItem(itemId, newName, newQuantity) {
-      if (newName && newQuantity > 0) {
+      if (newName && newQuantity >= 0) {
         update(ref(db, 'inventory/' + itemId), { name: newName, quantity: newQuantity })
           .then(() => showToast('Item updated successfully!'))
           .catch(() => showToast('Error updating item', true));
@@ -323,29 +285,6 @@
     }
 
     loadItems();
-
-    document.getElementById('goToMembers').addEventListener('click', () => {
-      window.location.href = 'members.html';
-    });
-
-    document.getElementById('goToSales').addEventListener('click', () => {
-      window.location.href = 'sales.html';
-    });
-
-    document.getElementById('goToRegister').addEventListener('click', () => {
-      window.location.href = 'index.html';
-    });
-
-    // Disabilita tasto destro e F12 per la sicurezza
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
-        e.preventDefault();
-      }
-    });
-
-    window.addEventListener('contextmenu', function(e) {
-      e.preventDefault();
-    });
   </script>
 </body>
 </html>
