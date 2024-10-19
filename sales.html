@@ -109,10 +109,17 @@
 
 <script>
 function clearTotal() {
-    document.getElementById('dailyTotal').textContent = "Total Today: €0";
-    document.getElementById('weeklyTotal').textContent = "Total This Week: €0";
-    document.getElementById('monthlyTotal').textContent = "Total This Month: €0";
+    const salesRef = ref(db, 'sales');
+    remove(salesRef).then(() => {
+        document.getElementById('dailyTotal').textContent = "Total Today: €0";
+        document.getElementById('weeklyTotal').textContent = "Total This Week: €0";
+        document.getElementById('monthlyTotal').textContent = "Total This Month: €0";
+        showToast('Totals cleared successfully!');
+    }).catch((error) => {
+        showToast('Error clearing totals: ' + error.message, true);
+    });
 }
+
 
 function saveReport() {
     const dailyTotal = document.getElementById('dailyTotal').textContent;
