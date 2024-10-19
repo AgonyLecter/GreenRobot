@@ -252,6 +252,23 @@ function saveReport() {
             }, 3000);
         }
     </script>
+    <script>
+// Disabilita il tasto destro del mouse
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Disabilita F12, Ctrl+Shift+I, Ctrl+Shift+J e Ctrl+U
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+        (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+        (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+    }
+});
+</script>
+
 </body>
 </html>
 
