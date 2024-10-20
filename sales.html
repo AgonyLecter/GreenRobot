@@ -105,35 +105,7 @@
         <div id="weeklyTotal">Total This Week: €0</div>
         <div id="monthlyTotal">Total This Month: €0</div>
         <button onclick="clearTotal()">Clear Total</button>
-<button onclick="saveReport()">Save Report</button>
-
-<script>
-function clearTotal() {
-    const salesRef = ref(db, 'sales');
-    remove(salesRef).then(() => {
-        document.getElementById('dailyTotal').textContent = "Total Today: €0";
-        document.getElementById('weeklyTotal').textContent = "Total This Week: €0";
-        document.getElementById('monthlyTotal').textContent = "Total This Month: €0";
-        showToast('Totals cleared successfully!');
-    }).catch((error) => {
-        showToast('Error clearing totals: ' + error.message, true);
-    });
-}
-
-
-function saveReport() {
-    const dailyTotal = document.getElementById('dailyTotal').textContent;
-    const weeklyTotal = document.getElementById('weeklyTotal').textContent;
-    const monthlyTotal = document.getElementById('monthlyTotal').textContent;
-
-    const report = `Sales Report:\n${dailyTotal}\n${weeklyTotal}\n${monthlyTotal}`;
-    const blob = new Blob([report], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'sales_report.txt';
-    link.click();
-}
-</script>
+        <button onclick="saveReport()">Save Report</button>
 
         <div id="salesLog"></div>
         <div id="toast" class="toast"></div>
@@ -148,7 +120,7 @@ function saveReport() {
 
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
-        import { getDatabase, ref, push, onValue } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
+        import { getDatabase, ref, push, onValue, remove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
 
         const firebaseConfig = {
             apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
@@ -162,6 +134,10 @@ function saveReport() {
         };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        window.db = db; // Rende 'db' accessibile globalmente
+        window.ref = ref; // Rende 'ref' accessibile globalmente
+        window.remove = remove; // Rende 'remove' accessibile globalmente
 
         window.addEventListener('DOMContentLoaded', () => {
             loadMembers();
@@ -241,6 +217,39 @@ function saveReport() {
                 document.getElementById('monthlyTotal').textContent = `Total This Month: €${monthlyTotal.toFixed(2)}`;
             });
         }
+    </script>
+
+    <script>
+        function clearTotal() {
+            const salesRef = ref(db, 'sales');
+
+            // Rimuovi tutti i dati di vendita dalla sezione 'sales'
+            remove(salesRef).then(() => {
+                // Resetta i totali giornalieri, settimanali e mensili
+                document.getElementById('dailyTotal').textContent = "Total Today: €0.00";
+                document.getElementById('weeklyTotal').textContent = "Total This Week: €0.00";
+                document.getElementById('monthlyTotal').textContent = "Total This Month: €0.00";
+
+                // Mostra un messaggio di successo
+                showToast('Totals cleared successfully!');
+            }).catch((error) => {
+                // Mostra un messaggio di errore in caso di fallimento
+                showToast('Error clearing totals: ' + error.message, true);
+            });
+        }
+
+        function saveReport() {
+            const dailyTotal = document.getElementById('dailyTotal').textContent;
+            const weeklyTotal = document.getElementById('weeklyTotal').textContent;
+            const monthlyTotal = document.getElementById('monthlyTotal').textContent;
+
+            const report = `Sales Report:\n${dailyTotal}\n${weeklyTotal}\n${monthlyTotal}`;
+            const blob = new Blob([report], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'sales_report.txt';
+            link.click();
+        }
 
         function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
@@ -252,25 +261,26 @@ function saveReport() {
             }, 3000);
         }
     </script>
+
     <script>
-// Disabilita il tasto destro del mouse
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-});
+        // Disabilita il tasto destro del mouse
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
 
-// Disabilita F12, Ctrl+Shift+I, Ctrl+Shift+J e Ctrl+U
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'F12' || 
-        (e.ctrlKey && e.shiftKey && e.key === 'I') || 
-        (e.ctrlKey && e.shiftKey && e.key === 'J') || 
-        (e.ctrlKey && e.key === 'U')) {
-        e.preventDefault();
-    }
-});
-</script>
-
+        // Disabilita F12, Ctrl+Shift+I, Ctrl+Shift+J e Ctrl+U
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+                (e.ctrlKey && e.shiftKey && e.key === 'I') || 
+                (e.ctrlKey && e.shiftKey && e.key === 'J') || 
+                (e.ctrlKey && e.key === 'U')) {
+                e.preventDefault();
+            }
+        });
+    </script>
 </body>
 </html>
+
 
 
 
