@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Green Robot - Inventory Management</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       font-family: 'Orbitron', sans-serif;
@@ -136,6 +137,20 @@
       background-color: #d32f2f;
       color: white;
     }
+
+    #inventoryChartContainer {
+      width: 100%;
+      max-width: 700px;
+      margin: 30px auto;
+      background-color: #1c1c1c;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    #inventoryChart {
+      width: 100%;
+    }
   </style>
 </head>
 <body oncontextmenu="return false;">
@@ -151,12 +166,17 @@
       <input type="number" id="itemQuantity" placeholder="Enter Item Quantity">
       <button id="addItem">Add Item</button>
       <button onclick="location.href='index.html'" style="background-color: #39ff14; color: black; padding: 12px; margin-top: 20px; border: none; border-radius: 8px; font-size: 1.1rem;">
-  Back to Home
-</button>
-
+        Back to Home
+      </button>
+      
     </div>
 
     <div id="itemsContainer"></div>
+  </div>
+
+  <div id="inventoryChartContainer">
+    <h2>Inventory Overview</h2>
+    <canvas id="inventoryChart"></canvas>
   </div>
 
   <script type="module">
@@ -164,7 +184,7 @@
     import { getDatabase, ref, set, push, onValue, update, remove } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js';
 
     const firebaseConfig = {
-      apiKey: "AIzaSyCPaFBGPyRS0LSdQvNYDucdLbIU2GSfqdE",
+      apiKey: "YOUR_FIREBASE_API_KEY",
       authDomain: "greenrobot-ede43.firebaseapp.com",
       databaseURL: "https://greenrobot-ede43-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "greenrobot-ede43",
@@ -178,6 +198,8 @@
     const db = getDatabase(app);
 
     const itemsRef = ref(db, 'inventory');
+    const inventoryChart = document.getElementById('inventoryChart').getContext('2d');
+    let chartInstance;
 
     document.getElementById('addItem').addEventListener('click', () => {
       const itemName = document.getElementById('itemName').value.trim();
@@ -198,11 +220,15 @@
         const itemsContainer = document.getElementById('itemsContainer');
         itemsContainer.innerHTML = '';
 
+        const data = [];
         snapshot.forEach((childSnapshot) => {
           const item = childSnapshot.val();
           const itemId = childSnapshot.key;
           itemsContainer.appendChild(createItemCard(item, itemId));
+          data.push({ name: item.name, quantity: item.quantity });
         });
+
+        updateChart(data);
       });
     }
 
@@ -226,10 +252,6 @@
       quantityInput.type = 'number';
       quantityInput.value = item.quantity;
 
-      const increaseButton = document.createElement('button');
-      increaseButton.textContent = '+';
-      increaseButton.onclick = () => updateItem(itemId, itemNameEditable.value, parseInt(quantityInput.value) + 1);
-
       const decreaseButton = document.createElement('button');
       decreaseButton.textContent = '-';
       decreaseButton.onclick = () => {
@@ -238,9 +260,13 @@
         }
       };
 
-      quantityButtons.appendChild(decreaseButton);
-      quantityButtons.appendChild(quantityInput);
+      const increaseButton = document.createElement('button');
+      increaseButton.textContent = '+';
+      increaseButton.onclick = () => updateItem(itemId, itemNameEditable.value, parseInt(quantityInput.value) + 1);
+
       quantityButtons.appendChild(increaseButton);
+      quantityButtons.appendChild(quantityInput);
+      quantityButtons.appendChild(decreaseButton);
 
       const updateButton = document.createElement('button');
       updateButton.textContent = 'Update';
@@ -278,6 +304,45 @@
         .catch(() => showToast('Error deleting item', true));
     }
 
+    function updateChart(data) {
+      const labels = data.map(item => item.name);
+      const quantities = data.map(item => item.quantity);
+
+      if (chartInstance) {
+        chartInstance.data.labels = labels;
+        chartInstance.data.datasets[0].data = quantities;
+        chartInstance.update();
+      } else {
+        chartInstance = new Chart(inventoryChart, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Quantity',
+              data: quantities,
+              backgroundColor: '#39ff14',
+              borderColor: '#32e613',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top'
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+    }
+
     function showToast(message, isError = false) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
@@ -292,5 +357,6 @@
   </script>
 </body>
 </html>
+
 
 
